@@ -1,26 +1,23 @@
 'use strict';
 const AWS = require('aws-sdk');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
+const sns = new AWS.SNS(); 
 const { v4: uuidv4 } = require('uuid');
 
-module.exports.hello = (event,context,callback) => {
-  const response={
+module.exports.hello = (event, context, callback) => {
+  const response = {
     statusCode: 200,
-    body: JSON.stringify(
-      {
-        message: 'Get inicial de lambda funcional',
-      },
-    ),
+    body: JSON.stringify({
+      message: 'Get inicial de lambda funcional',
+    }),
   };
 
-  return callback(null,response);
+  return callback(null, response);
 };
+
 module.exports.createUser = async (event, context, callback) => {
   const body = JSON.parse(event.body);
-
-  
   const id = uuidv4();
-
   const params = {
     TableName: 'UsersTable',
     Item: {
@@ -32,6 +29,7 @@ module.exports.createUser = async (event, context, callback) => {
 
   try {
     await dynamodb.put(params).promise();
+    await module.exports.snsRequest(`Nuevo usuario creado: ${body.nombre}`); 
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -48,7 +46,6 @@ module.exports.createUser = async (event, context, callback) => {
     };
   }
 };
-
 
 module.exports.getAllUsers = async (event, context, callback) => {
   const params = {
@@ -105,7 +102,6 @@ module.exports.getUserById = async (event, context, callback) => {
     };
   }
 };
-
 
 module.exports.deleteUser = async (event, context, callback) => {
   const { id } = event.pathParameters;
@@ -170,5 +166,19 @@ module.exports.updateUser = async (event, context, callback) => {
         error: 'Ocurrió un error al actualizar usuario'
       })
     };
+  }
+};
+
+module.exports.snsRequest = async (mensaje) => {
+  const params = {
+    Message: mensaje,
+    TopicArn: 'arn:aws:sns:us-east-1:590183847589:usuario-creado' 
+  };
+
+  try {
+    await sns.publish(params).promise();
+    console.log('Mensaje enviado a SNS');
+  } catch (error) {
+    console.error('Error al enviar mensaje a SNS', error);
   }
 };
