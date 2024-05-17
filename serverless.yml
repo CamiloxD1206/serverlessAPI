@@ -1,0 +1,86 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: userslambda
+frameworkVersion: "3"
+provider:
+  name: aws
+  runtime: nodejs18.x
+  profile: admin
+  region: us-east-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action: 
+            - dynamodb:*
+          Resource:
+            - arn:aws:dynamodb:us-east-1:590183847589:table/UsersTable
+
+
+functions:
+  hello:
+    handler: handler.hello
+    events:
+      - http:
+          method: get
+          path: /helloworld
+
+  createUser:
+    handler: handler.createUser
+    events:
+      - http:
+          method: post
+          path: /usersct
+
+  getAllUsers:
+    handler: handler.getAllUsers
+    events:
+      - http:
+          method: get
+          path: /users
+  getUserById:
+    handler: handler.getUserById
+    events:
+      - http:
+          method: get
+          path: /users/{id}        
+  
+  deleteUser:
+    handler: handler.deleteUser
+    events:
+      - http:
+          method: delete
+          path: /users/{id}
+
+  updateUser:
+    handler: handler.updateUser
+    events:
+      - http:
+          method: put
+          path: /users/{id}
+        
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: UsersTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions: 
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
