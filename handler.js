@@ -8,13 +8,14 @@ module.exports.hello = (event, context, callback) => {
   const response = {
     statusCode: 200,
     body: JSON.stringify({
-      message: 'Get inicial de lambda funcional',
+      message: 'Bienvenido a mi API',
     }),
   };
 
   return callback(null, response);
 };
 
+// Métodos de mi API------------------------------------------------
 module.exports.createUser = async (event, context, callback) => {
   const body = JSON.parse(event.body);
   const id = uuidv4();
@@ -22,14 +23,14 @@ module.exports.createUser = async (event, context, callback) => {
     TableName: 'UsersTable',
     Item: {
       id: id,
-      nombre: body.nombre,
-      cedula: body.cedula
+      correo: body.correo,
+      contraseña: body.contraseña
     }
   };
 
   try {
     await dynamodb.put(params).promise();
-    await module.exports.snsRequest(`Nuevo usuario creado: ${body.nombre}`); 
+    await module.exports.snsRequest(`Nuevo usuario creado: ${body.correo}`); 
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -141,10 +142,10 @@ module.exports.updateUser = async (event, context, callback) => {
     Key: {
       id: id
     },
-    UpdateExpression: 'set nombre = :nombre, cedula = :cedula',
+    UpdateExpression: 'set correo = :correo, contraseña = :contraseña',
     ExpressionAttributeValues: {
-      ':nombre': body.nombre,
-      ':cedula': body.cedula
+      ':correo': body.correo,
+      ':contraseña': body.contraseña
     },
     ReturnValues: 'UPDATED_NEW'
   };
@@ -169,10 +170,12 @@ module.exports.updateUser = async (event, context, callback) => {
   }
 };
 
+// SNS------------------------------------------------
 module.exports.snsRequest = async (mensaje) => {
+  let arn = process.env.SNS_ARN
   const params = {
     Message: mensaje,
-    TopicArn: 'arn:aws:sns:us-east-1:590183847589:usuario-creado' 
+    TopicArn: arn 
   };
 
   try {

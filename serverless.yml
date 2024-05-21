@@ -10,15 +10,17 @@
 # docs.serverless.com
 #
 # Happy Coding!
-
 service: userslambda
 frameworkVersion: "3"
-
 provider:
   name: aws
   runtime: nodejs18.x
   profile: admin
   region: us-east-1
+  environment:
+    SNS_ARN: arn:aws:sns:us-east-1:590183847589:usuario-creado
+    DYNAMO_ARN: variables-entorno/DYNAMO_ARN_USERS_TABLE
+
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -28,7 +30,9 @@ provider:
     - Effect: Allow
       Action:
         - sns:Publish
-      Resource: arn:aws:sns:us-east-1:590183847589:usuario-creado # Reemplaza con tu ARN de SNS
+      Resource: arn:aws:sns:us-east-1:590183847589:usuario-creado
+
+
 
 functions:
   hello:
@@ -37,6 +41,7 @@ functions:
       - http:
           method: get
           path: /helloworld
+
   createUser:
     handler: handler.createUser
     events:
