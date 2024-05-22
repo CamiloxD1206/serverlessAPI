@@ -1,15 +1,3 @@
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-# docs.serverless.com
-#
-# Happy Coding!
 service: userslambda
 frameworkVersion: "3"
 provider:
@@ -17,10 +5,6 @@ provider:
   runtime: nodejs18.x
   profile: admin
   region: us-east-1
-  environment:
-    SNS_ARN: arn:aws:sns:us-east-1:590183847589:usuario-creado
-    DYNAMO_ARN: variables-entorno/DYNAMO_ARN_USERS_TABLE
-
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -30,9 +14,12 @@ provider:
     - Effect: Allow
       Action:
         - sns:Publish
-      Resource: arn:aws:sns:us-east-1:590183847589:usuario-creado
+      Resource: arn:aws:sns:us-east-1:590183847589:usuario-creado 
 
-
+  environment:
+    DYNAMO_ARN: ${ssm:/variables-entorno/DYNAMO_ARN_USERS_TABLE}
+    SNS_ARN: arn:aws:sns:us-east-1:590183847589:usuario-creado
+    TOKEN_DEV: eyJraWQiOiJpUzNQQzBjXC9zM0lTdU05ZlYwY2dzczV5NGxXMkZSXC9tYStcLzlvbUZcLzFVRT0iLCJhbGciOiJSUzI1NiJ9.eyJhdF9oYXNoIjoiTk96RTBhb0lqWS1lSHBTR1dCQkN5ZyIsInN1YiI6Ijc0Njg5NDk4LTYwYTEtNzA2OC0wZTNhLWEwZDRiMWNiNzg3MiIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy1lYXN0LTEuYW1hem9uYXdzLmNvbVwvdXMtZWFzdC0xX2Z6OW90NTRGTiIsImNvZ25pdG86dXNlcm5hbWUiOiI3NDY4OTQ5OC02MGExLTcwNjgtMGUzYS1hMGQ0YjFjYjc4NzIiLCJhdWQiOiIxOXZ0bDZwcWU2ZGV0bnVwdTR2cnRkZTNpMiIsImV2ZW50X2lkIjoiNzQ4NTdlZjctMmQ4MS00NGM4LThiYzYtMDgxNWUzZGUzYjFmIiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3MTYzOTc4MTYsImV4cCI6MTcxNjQ4NDIxNiwiaWF0IjoxNzE2Mzk3ODE2LCJqdGkiOiI4M2RmYmRiNi1lODA4LTQ3ZDktYjYzMi0zNzgzOWUzMDQ0NzQiLCJlbWFpbCI6ImNyaWllbmdlbEBnbWFpbC5jb20ifQ.jXbnYrkv7FvNh_wxeCFWvjybHjJFCOywpm2-MjjJS9kIE0hDfWgn-beK7SkmJuMQt6F74IHENXyNEZdaYGDoio9VfIY-jbCle0HcSOdeuIWhZA_1Gm7OKXx-jmaBH2sp16BBPJl5XN8IelS42C0IMZFI7qmjoGJ-dHba_Uu2x_DCvu69pY7MM3azP8JB492SKGHBdn8rNk_ARESQG5V4XHqYSwboZLMRA-BYITarEEkwNb9kiLTI9onmWidYFM1U2ewbcPjL76hktIqTPHFjkJ2p4rLoeqYIZ2ZkJ0sFW9F1CLpJMV6-O-BrYyjXcom923Ten7KtGS44N3k6vpkKQA&
 
 functions:
   hello:
@@ -48,6 +35,14 @@ functions:
       - http:
           method: post
           path: /usersct
+
+  login:
+   handler: handler.login
+   events:
+     - http:
+         method: post
+         path: /login
+
   getAllUsers:
     handler: handler.getAllUsers
     events:
@@ -74,6 +69,10 @@ functions:
           path: /users/{id}
   snsRequest:
     handler: handler.snsRequest
+    events:
+      - http:
+          method: post
+          path: /sns
 
 resources:
   Resources:
