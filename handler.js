@@ -3,7 +3,6 @@ const AWS = require("aws-sdk");
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const sns = new AWS.SNS();
 const { v4: uuidv4 } = require("uuid");
-const ssm = new AWS.SSM();
 const cognitoProvider = new AWS.CognitoIdentityServiceProvider();
 
 module.exports.hello = (event, context, callback) => {
@@ -16,7 +15,7 @@ module.exports.hello = (event, context, callback) => {
 
   return callback(null, response);
 };
-
+//funcion autorizador------------------------------------
 module.exports.authorize = async (token) => {
   const tokenDev = process.env.TOKEN_DEV;
   if (!token) {
@@ -73,7 +72,6 @@ module.exports.createUser = async (event, context, callback) => {
   }
 };
 
-//login-------------------------------------------------------------
 //login-------------------------------------------------------------
 module.exports.login = async (event, context, callback) => {
   const body = JSON.parse(event.body);

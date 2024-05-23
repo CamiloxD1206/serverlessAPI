@@ -5,21 +5,22 @@ provider:
   runtime: nodejs18.x
   profile: admin
   region: us-east-1
+  environment:
+   SNS_ARN: ${ssm:/dev/SNS_ARN}
+   TOKEN_DEV: ${ssm:/dev/TOKEN_SECRET} 
+   DYNAMO_ARN: ${ssm:/dev/DYNAMO_ARN}
+   
   iamRoleStatements:
     - Effect: Allow
       Action:
         - dynamodb:*
       Resource:
-        - arn:aws:dynamodb:us-east-1:590183847589:table/UsersTable
+        - ${self:provider.environment.DYNAMO_ARN}
     - Effect: Allow
       Action:
         - sns:Publish
-      Resource: arn:aws:sns:us-east-1:590183847589:usuario-creado 
+      Resource: ${self:provider.environment.SNS_ARN}
 
-  environment:
-    DYNAMO_ARN: ${ssm:/variables-entorno/DYNAMO_ARN_USERS_TABLE}
-    SNS_ARN: arn:aws:sns:us-east-1:590183847589:usuario-creado
-    TOKEN_DEV: eyJraWQiOiJpUzNQQzBjXC9zM0lTdU05ZlYwY2dzczV5NGxXMkZSXC9tYStcLzlvbUZcLzFVRT0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiI3NDk4ZTRjOC01MDYxLTcwZjAtZjMwMi00NjYwYzg5ZTZlNTgiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLnVzLWVhc3QtMS5hbWF6b25hd3MuY29tXC91cy1lYXN0LTFfZno5b3Q1NEZOIiwiY29nbml0bzp1c2VybmFtZSI6Ijc0OThlNGM4LTUwNjEtNzBmMC1mMzAyLTQ2NjBjODllNmU1OCIsIm9yaWdpbl9qdGkiOiIyM2EzZWZiYS0xM2IxLTRhMzItYWMzYi02ZGQ2MmM5NmM1NjMiLCJhdWQiOiIxOXZ0bDZwcWU2ZGV0bnVwdTR2cnRkZTNpMiIsImV2ZW50X2lkIjoiMjEzMGM1ODAtNDQ5ZS00MjIwLWIwODEtZWQ0ODQ0ODM4OTUwIiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3MTY0MjAzNTMsImV4cCI6MTcxNjUwNjc1MywiaWF0IjoxNzE2NDIwMzUzLCJqdGkiOiIwZDBjMTNkNy01NTI4LTQyZmEtYTRmZC03ODUzMjBmNjk4ZTQiLCJlbWFpbCI6ImNzMTI1MDkwOUBnbWFpbC5jb20ifQ.za1io71NWWA58bPY3W1BCgwwb9aA0dnl5-yt0Tuo1zPcL4gIEA9w6UYR0Riph3VnnBNv4gDP5nHmTAXD59Koc5ZLmdEJQh1lQCLs3jFwRvs9-ScszVzOz8h6ZKzlEhAVrhfnf3LX_mu2GHQzDbixs1j_66-LSY-FpoLHE7QDYNgWq-RrJvn6AEUvHOgh6m3rzxKABlAgd-6PBqbtrN-2kLXtUFGSymv497gHo2ZE-Pq5QM2D9YnEFLFNCjzVHsQEq4FZr1IIxcvUQ5IqeBz8upIASelGb0nVIRBIYyFrUYsbmnmk1bDr8Um4gyHu-L9GtGxkLnHC_p68PDYOokS92Q
 functions:
   hello:
     handler: handler.hello
