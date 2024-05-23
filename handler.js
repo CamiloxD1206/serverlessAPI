@@ -17,17 +17,15 @@ module.exports.hello = (event, context, callback) => {
   return callback(null, response);
 };
 
-module.exports.authorize = async (event, context, callback) => {
-  const token = event.headers.Authorization;
-  const tokenDev=process.env.TOKEN_DEV
+module.exports.authorize = async (token) => {
+  const tokenDev = process.env.TOKEN_DEV;
   if (!token) {
     return {
       statusCode: 401,
       body: JSON.stringify({ error: "Token de autorización no proporcionado" }),
     };
   }
-  if (
-    token !== tokenDev) {
+  if (token !== tokenDev) {
     return {
       statusCode: 401,
       body: JSON.stringify({ error: "Token de autorización inválido" }),
@@ -35,6 +33,7 @@ module.exports.authorize = async (event, context, callback) => {
   }
   return null;
 };
+
 //register------------------------------------------------------------------
 module.exports.createUser = async (event, context, callback) => {
   const body = JSON.parse(event.body);
@@ -45,7 +44,7 @@ module.exports.createUser = async (event, context, callback) => {
       Item: {
         id: id,
         correo: body.correo,
-        password: body.contraseña,
+        contraseña: body.contraseña,
       },
     };
     await dynamodb.put(dynamoParams).promise();
@@ -53,7 +52,7 @@ module.exports.createUser = async (event, context, callback) => {
     const cognitoParams = {
       UserPoolId: "us-east-1_fz9ot54FN", 
       Username: body.correo,
-      Password: body.contraseña
+      TemporaryPassword: body.contraseña
     };
     const cognitoResponse = await cognitoProvider.adminCreateUser(cognitoParams).promise();
     return {
@@ -75,6 +74,7 @@ module.exports.createUser = async (event, context, callback) => {
 };
 
 //login-------------------------------------------------------------
+//login-------------------------------------------------------------
 module.exports.login = async (event, context, callback) => {
   const body = JSON.parse(event.body);
   try {
@@ -88,11 +88,19 @@ module.exports.login = async (event, context, callback) => {
       }
     };
     const authResponse = await cognitoProvider.adminInitiateAuth(authParams).promise();
+    const accessToken = authResponse.AuthenticationResult.AccessToken;
+    const idToken = authResponse.AuthenticationResult.IdToken;
+    const refreshToken = authResponse.AuthenticationResult.RefreshToken;
     return {
       statusCode: 200,
+      headers: {
+        "Authorization": `${accessToken}`
+      },
       body: JSON.stringify({
         message: "Inicio de sesión exitoso",
-        accessToken: authResponse.AuthenticationResult.AccessToken,
+        accessToken: accessToken,
+        idToken: idToken,
+        refreshToken: refreshToken
       }),
     };
   } catch (error) {
@@ -100,22 +108,16 @@ module.exports.login = async (event, context, callback) => {
     return {
       statusCode: 401,
       body: JSON.stringify({
-        error: "Credenciales inválidas. Por favor, verifica tu usuario y contraseña e intenta nuevamente.",error
+        error: "Credenciales inválidas. Por favor, verifica tu usuario y contraseña e intenta nuevamente.",
       }),
     };
   }
 };
 
-
-
-
 // Métodos de mi API------------------------------------------------
 module.exports.getAllUsers = async (event, context, callback) => {
-  const authorizationResult = await module.exports.authorize(
-    event,
-    context,
-    callback
-  );
+  const token = event.headers.Authorization;
+  const authorizationResult = await module.exports.authorize(token);
   if (authorizationResult) {
     return authorizationResult;
   }
@@ -142,11 +144,8 @@ module.exports.getAllUsers = async (event, context, callback) => {
 };
 
 module.exports.getUserById = async (event, context, callback) => {
-  const authorizationResult = await module.exports.authorize(
-    event,
-    context,
-    callback
-  );
+  const token = event.headers.Authorization;
+  const authorizationResult = await module.exports.authorize(token);
   if (authorizationResult) {
     return authorizationResult;
   }
@@ -185,11 +184,8 @@ module.exports.getUserById = async (event, context, callback) => {
 };
 
 module.exports.deleteUser = async (event, context, callback) => {
-  const authorizationResult = await module.exports.authorize(
-    event,
-    context,
-    callback
-  );
+  const token = event.headers.Authorization;
+  const authorizationResult = await module.exports.authorize(token);
   if (authorizationResult) {
     return authorizationResult;
   }
@@ -223,11 +219,8 @@ module.exports.deleteUser = async (event, context, callback) => {
 };
 
 module.exports.updateUser = async (event, context, callback) => {
-  const authorizationResult = await module.exports.authorize(
-    event,
-    context,
-    callback
-  );
+  const token = event.headers.Authorization;
+  const authorizationResult = await module.exports.authorize(token);
   if (authorizationResult) {
     return authorizationResult;
   }
